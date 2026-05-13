@@ -30,20 +30,83 @@
 | 11 | `apiNoticeDetail` | `/wallNewsDetail` | 公告详情 | `{ id }` |
 | 12 | `apiSearchData` | `/searchWall` | 搜索壁纸 | `{ keyword, pageNum, pageSize }` |
 
+## API 返回数据结构
+
+通用响应格式: `{ errCode: 0, errMsg: "操作成功", data: [...] }`，成功判断条件 `errCode === 0`
+
+### 1. Banner `/homeBanner`
+```ts
+item: { _id, picurl, sort, target, url, appid? }
+// _id: 唯一标识
+// picurl: 轮播图片 (✅ 全路径)
+// url: 跳转参数，格式 "id=xxx&name=xxx"
+// target: "self" | "miniProgram"
+```
+
+### 2. 公告 `/wallNewsList`
+```ts
+item: { _id, title, author, publish_date, view_count, select }
+// _id: 唯一标识
+// title: 公告标题
+// view_count: 阅读量
+```
+
+### 3. 每日推荐 `/randomWall`
+```ts
+item: { _id, classid, description, smallPicurl, tabs, score, classname, nickname }
+// _id: 唯一标识
+// smallPicurl: 缩略图 (✅ 全路径)
+// classname: 所属分类名
+// tabs: 标签数组
+// score: 评分 (0-5)
+```
+
+### 4. 全部分类 `/classify`
+```ts
+item: { _id, name, picurl, enable, select, sort, updateTime }
+// _id: 唯一标识 (❗MongoDB ObjectId)
+// name: 分类名
+// picurl: 分类封面图 (✅ 全路径)
+// updateTime: 更新时间戳 (毫秒)
+```
+
+### 5. 分类下壁纸列表 `/wallList`
+```ts
+item: { _id, classid, description, smallPicurl, tabs, score, nickname }
+返回: { data: [...], total: 113 }
+// _id: 壁纸唯一ID
+// smallPicurl: 缩略图 (✅ 全路径)
+// description: 壁纸描述
+// tabs: 标签数组
+// score: 评分 (0-5)
+// nickname: 上传者昵称
+// total: 该分类壁纸总数
+```
+
+### 6. 壁纸详情 `/detailWall`
+```ts
+item: { _id, classid, description, smallPicurl, tabs, score, nickname }
+// ⚠️ 与 /wallList 返回结构完全相同
+// ⚠️ data 是数组(单元素)，取 res.data[0] 使用
+// ❗ 只有 smallPicurl 没有大图，大图需转格式
+// 例: xxx_small.webp → xxx.jpg
+```
+
 ## 目录结构
 
 ```
 api/apis.js              - API接口集合，统一调用 request()
-utils/request.js         - uni.request Promise封装: baseURL注入、access-key注入、错误码分层处理
+utils/request.js         - ✅ uni.request Promise封装: baseURL注入、access-key注入、错误码分层处理
 utils/system.js          - ✅ 状态栏/导航栏高度计算，含平台条件编译 (头条 vs 其他)
-utils/common.js          - compareTimestamp() 时间人性化展示, gotoHome() 异常跳转
-components/custom-nav-bar/ - 自定义导航栏 (固定定位 + 渐变背景 + 搜索入口 + 胶囊按钮适配)
-components/theme-item/   - 专题分类卡片 (支持 isMore 模式跳转分类页)
+utils/common.js          - ✅ compareTimestamp() 时间人性化展示, gotoHome() 异常跳转
+components/custom-nav-bar/ - ✅ 自定义导航栏 (固定定位 + 渐变背景 + 搜索入口 + 胶囊按钮适配)
+components/theme-item/   - ✅ 专题分类卡片 (支持 isMore 模式跳转分类页)
 components/common-title/ - ✅ 通用标题栏 (name + custom 双插槽)
-pages/index/             - 首页: Banner轮播、公告垂直滚动、每日推荐横向scroll、专题精选Grid
-pages/classify/          - 分类页: 3列Grid展示全部分类
-pages/classlist/         - 列表页: 3列Grid + onReachBottom分页 (pageNum/pageSize)
-pages/preview/           - 预览页: 全屏Swiper + 三图预加载 + 信息弹窗 + 评分 + 下载保存
+pages/index/             - ✅ 首页: Banner轮播、公告垂直滚动、每日推荐横向scroll、专题精选Grid
+pages/classify/          - ✅ 分类页: 3列Grid展示全部分类
+pages/user/              - ✅ 用户中心: IP属地 + 下载/评分数量 + 联系客服(button open-type) + 订阅/常见问题
+pages/classlist/         - ✅ 列表页: 3列Grid + onReachBottom分页 (pageNum/pageSize)
+pages/preview/           - ✅ 预览页: 全屏Swiper + 三图预加载 + 信息弹窗 + 评分 + 下载保存
 pages/search/            - 搜索页: 历史记录(去重10条)+热门推荐+触底分页+空态uView-empty
 pages/notice/            - 公告列表
 pages/notice/detail      - 公告详情: tag置顶 + mp-html富文本渲染 + 阅读量
